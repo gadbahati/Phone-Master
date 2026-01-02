@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Phone Master - Utility Toolkit</title>
+    <meta name="description" content="Premium Utility Toolkit for Android. Features PDF tools, AI OCR, WhatsApp Status Saver, and System Health Report Card. Developed by BahatiTech Solutions.">
     
     <!-- PWA Primary Meta Tags -->
     <meta name="theme-color" content="#3b82f6">
@@ -14,12 +15,13 @@
     <meta name="apple-mobile-web-app-title" content="Phone Master">
     <meta name="application-name" content="Phone Master">
     
-    <!-- Manifest Link (Absolute path relative to root) -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Manifest Link (Explicitly relative to ensure detection) -->
+    <link rel="manifest" href="./manifest.json">
     
     <!-- Icons -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/192/3067/3067451.png">
     <link rel="icon" type="image/png" sizes="192x192" href="https://cdn-icons-png.flaticon.com/192/3067/3067451.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://cdn-icons-png.flaticon.com/512/3067/3067451.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -121,7 +123,11 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js', { scope: './' })
-                    .then(reg => console.log('Service Worker registered with scope:', reg.scope))
+                    .then(reg => {
+                        console.log('Service Worker registered with scope:', reg.scope);
+                        // Trigger a fetch to ensure assets are cached immediately for testing tools
+                        reg.update();
+                    })
                     .catch(err => console.log('Service Worker failed:', err));
             });
         }

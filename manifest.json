@@ -3,7 +3,7 @@
   "name": "Phone Master - Utility Toolkit",
   "short_name": "Phone Master",
   "description": "Premium Utility Toolkit for Android. Features PDF tools, AI OCR, WhatsApp Status Saver, and System Health Report Card. Developed by BahatiTech Solutions.",
-  "id": "com.bahatitech.phonemaster.v2",
+  "id": "com.bahatitech.phonemaster.v2.1",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -29,6 +29,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3067/3067451.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
