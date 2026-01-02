@@ -6,13 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Phone Master - Utility Toolkit</title>
     
-    <!-- PWA Meta Tags -->
+    <!-- PWA Primary Meta Tags -->
     <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Phone Master">
+    <meta name="application-name" content="Phone Master">
+    
+    <!-- Manifest Link (Absolute path relative to root) -->
     <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/192/3067/3067451.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://cdn-icons-png.flaticon.com/192/3067/3067451.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -24,6 +31,7 @@
             min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            overflow-x: hidden;
         }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
@@ -112,9 +120,9 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker failed', err));
+                navigator.serviceWorker.register('./service-worker.js', { scope: './' })
+                    .then(reg => console.log('Service Worker registered with scope:', reg.scope))
+                    .catch(err => console.log('Service Worker failed:', err));
             });
         }
     </script>
