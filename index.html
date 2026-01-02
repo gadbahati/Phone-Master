@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Phone Master - Utility Toolkit</title>
-    <meta name="description" content="Premium Utility Toolkit for Android. Features PDF tools, AI OCR, WhatsApp Status Saver, and System Health Report Card. Developed by BahatiTech Solutions.">
+    <meta name="description" content="Professional toolkit for PDF compression, AI-powered OCR, WhatsApp Status saving, and system health monitoring. Featuring the Bahati Security Report Card.">
     
     <!-- PWA Primary Meta Tags -->
     <meta name="theme-color" content="#3b82f6">
@@ -15,8 +15,8 @@
     <meta name="apple-mobile-web-app-title" content="Phone Master">
     <meta name="application-name" content="Phone Master">
     
-    <!-- Manifest Link (Explicitly relative to ensure detection) -->
-    <link rel="manifest" href="./manifest.json">
+    <!-- Manifest Link (Standard relative path) -->
+    <link rel="manifest" href="manifest.json">
     
     <!-- Icons -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/192/3067/3067451.png">
@@ -122,12 +122,8 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js', { scope: './' })
-                    .then(reg => {
-                        console.log('Service Worker registered with scope:', reg.scope);
-                        // Trigger a fetch to ensure assets are cached immediately for testing tools
-                        reg.update();
-                    })
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
                     .catch(err => console.log('Service Worker failed:', err));
             });
         }

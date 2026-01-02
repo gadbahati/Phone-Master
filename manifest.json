@@ -2,8 +2,8 @@
 {
   "name": "Phone Master - Utility Toolkit",
   "short_name": "Phone Master",
-  "description": "Premium Utility Toolkit for Android. Features PDF tools, AI OCR, WhatsApp Status Saver, and System Health Report Card. Developed by BahatiTech Solutions.",
-  "id": "com.bahatitech.phonemaster.v2.1",
+  "description": "Professional toolkit for PDF compression, AI-powered OCR, WhatsApp Status saving, and system health monitoring. Featuring the Bahati Security Report Card.",
+  "id": "com.bahatitech.phonemaster",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -14,10 +14,21 @@
   "dir": "ltr",
   "categories": [
     "productivity",
-    "utilities",
-    "tools"
+    "utilities"
   ],
   "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/192/3067/3067451.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3067/3067451.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "https://cdn-icons-png.flaticon.com/192/3067/3067451.png",
       "sizes": "192x192",
@@ -28,29 +39,7 @@
       "src": "https://cdn-icons-png.flaticon.com/512/3067/3067451.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3067/3067451.png",
-      "sizes": "512x512",
-      "type": "image/png",
       "purpose": "maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Security Scan",
-      "short_name": "Scan",
-      "description": "Run a deep system health check",
-      "url": "./?tab=Security",
-      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/96/3067/3067451.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Save Status",
-      "short_name": "Status",
-      "description": "Save WhatsApp Status",
-      "url": "./?tab=Media",
-      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/96/3067/3067451.png", "sizes": "96x96" }]
     }
   ],
   "screenshots": [
@@ -59,14 +48,28 @@
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Phone Master Dashboard"
+      "label": "Phone Master Mobile View"
     },
     {
       "src": "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?auto=format&fit=crop&q=80&w=1920&h=1080",
       "sizes": "1920x1080",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Phone Master Desktop Mode"
+      "label": "Phone Master Desktop View"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Scan Device",
+      "short_name": "Scan",
+      "url": "./?tab=Security",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/96/3067/3067451.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Status Saver",
+      "short_name": "Status",
+      "url": "./?tab=Media",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/96/3067/3067451.png", "sizes": "96x96" }]
     }
   ],
   "prefer_related_applications": false,
