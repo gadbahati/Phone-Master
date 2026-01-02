@@ -35,12 +35,17 @@ export const translations = {
       subtitle: 'Intelligent Photos & Videos',
       status: 'Status Saver',
       lens: 'Bahati Lens',
+      waDirect: 'WhatsApp Direct',
+      waDirectDesc: 'Message without saving number',
       save: 'Save Status',
       history: 'History',
       aiAnalysis: 'Smart Analysis',
       snap: 'Snap a document for analysis',
       unlock: 'Unlock AI Lens',
-      back: 'Go Back'
+      back: 'Go Back',
+      waPlaceholder: 'Enter phone number (e.g. 254...)',
+      waMessage: 'Enter your message...',
+      waSend: 'Open WhatsApp Chat'
     },
     audio: {
       title: 'Audio',
@@ -56,12 +61,18 @@ export const translations = {
       protect: 'Protect',
       speedup: 'Speed Up',
       internet: 'Internet',
+      battery: 'Battery Master',
       working: 'Working...',
       done: 'Finished!',
       apps: 'Checking apps...',
       files: 'Protecting files...',
       internetShield: 'Internet Shield',
-      active: 'Protection Active'
+      active: 'Protection Active',
+      speedTest: 'Run Speed Test',
+      testing: 'Testing Connection...',
+      download: 'Download',
+      upload: 'Upload',
+      ping: 'Ping'
     },
     settings: {
       title: 'Settings',
@@ -72,7 +83,11 @@ export const translations = {
       widgetTitle: 'Home Screen Widget',
       rate: 'Rate Phone Master',
       support: 'Support BahatiTech',
-      developedBy: 'Developed By'
+      developedBy: 'Proudly Developed By',
+      copyright: '© 2026 Phone Master. All Rights Reserved.',
+      contactUs: 'Contact Developer',
+      whatsapp: 'WhatsApp',
+      call: 'Call Now'
     }
   },
   sw: {
@@ -108,12 +123,17 @@ export const translations = {
       subtitle: 'Picha na Video za Kisasa',
       status: 'Hifadhi Hali',
       lens: 'Lenzi ya Bahati',
+      waDirect: 'WhatsApp Bila Jina',
+      waDirectDesc: 'Tuma ujumbe bila kuhifadhi namba',
       save: 'Hifadhi Hali',
       history: 'Historia',
       aiAnalysis: 'Uchambuzi Mahiri',
       snap: 'Piga picha hati kwa uchambuzi',
       unlock: 'Fungua Lenzi ya AI',
-      back: 'Rudi'
+      back: 'Rudi',
+      waPlaceholder: 'Weka namba (mfano 254...)',
+      waMessage: 'Andika ujumbe wako...',
+      waSend: 'Fungua WhatsApp'
     },
     audio: {
       title: 'Sauti',
@@ -129,12 +149,18 @@ export const translations = {
       protect: 'Linda',
       speedup: 'Ongeza Kasi',
       internet: 'Mtandao',
+      battery: 'Afya ya Betri',
       working: 'Inafanya kazi...',
       done: 'Tayari!',
       apps: 'Kuangalia programu...',
       files: 'Kulinda faili...',
       internetShield: 'Ulinzi wa Mtandao',
-      active: 'Ulinzi Umeanzishwa'
+      active: 'Ulinzi Umeanzishwa',
+      speedTest: 'Pima Kasi ya Mtandao',
+      testing: 'Inapima...',
+      download: 'Pakua',
+      upload: 'Tuma',
+      ping: 'Ping'
     },
     settings: {
       title: 'Mipangilio',
@@ -145,7 +171,11 @@ export const translations = {
       widgetTitle: 'Wijeti ya Skrini',
       rate: 'Tathmini Phone Master',
       support: 'Saidia BahatiTech',
-      developedBy: 'Imeundwa Na'
+      developedBy: 'Imeundwa kwa Fahari Na',
+      copyright: '© 2026 Phone Master. Haki zote zimehifadhiwa.',
+      contactUs: 'Wasiliana na Msanidi',
+      whatsapp: 'WhatsApp',
+      call: 'Piga Simu'
     }
   }
 };
