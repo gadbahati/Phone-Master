@@ -2,21 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
-  ShieldAlert, 
   Zap, 
   CheckCircle, 
   Radar, 
   Globe, 
-  Lock,
   Battery,
   BatteryCharging,
-  BatteryWarning,
   Activity,
-  ArrowDown,
-  ArrowUp,
   FileText,
   ChevronRight,
-  ShieldQuestion
+  Award,
+  Calendar,
+  User
 } from 'lucide-react';
 import { PaymentModal } from '../components/PaymentModal';
 import { Language, translations } from '../services/i18n';
@@ -36,7 +33,6 @@ export const SecurityScreen: React.FC<Props> = ({ language }) => {
   const [showPayment, setShowPayment] = useState(false);
   
   const [batteryInfo, setBatteryInfo] = useState<{ level: number; charging: boolean } | null>(null);
-  const [testingSpeed, setTestingSpeed] = useState(false);
   const [speedResult, setSpeedResult] = useState<{ down: string; up: string; ping: string } | null>(null);
 
   const t = translations[language].health;
@@ -80,38 +76,61 @@ export const SecurityScreen: React.FC<Props> = ({ language }) => {
           <ChevronRight className="rotate-180 mr-2" /> Back to Dashboard
         </button>
         
-        <div className="bg-white dark:bg-slate-800 rounded-[3rem] p-8 md:p-12 shadow-2xl border border-slate-100 dark:border-slate-700">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white italic tracking-tighter">Health Report</h2>
-              <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Phone Master Verified • 2026</p>
+        <div className="bg-white dark:bg-slate-800 rounded-[3rem] p-8 md:p-12 shadow-2xl border-4 border-slate-100 dark:border-slate-700 relative overflow-hidden">
+          {/* Watermark */}
+          <ShieldCheck className="absolute -bottom-10 -right-10 w-64 h-64 text-slate-50 dark:text-slate-900 opacity-50 -rotate-12 pointer-events-none" />
+
+          <div className="text-center mb-12">
+            <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20">
+              <Award className="text-white w-10 h-10" />
             </div>
-            <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center">
-              <ShieldCheck className="text-emerald-500 w-10 h-10" />
+            <h2 className="text-4xl font-black text-slate-900 dark:text-white italic tracking-tighter mb-2">Device Report Card</h2>
+            <p className="text-[10px] text-blue-500 font-black uppercase tracking-[0.4em]">Official System Health Certification</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-10">
+            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+               <div className="flex items-center text-[8px] text-slate-400 font-black uppercase tracking-widest mb-1">
+                 <Calendar className="w-3 h-3 mr-1" /> Generated On
+               </div>
+               <p className="text-xs font-bold text-slate-900 dark:text-white">{new Date().toLocaleDateString()}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+               <div className="flex items-center text-[8px] text-slate-400 font-black uppercase tracking-widest mb-1">
+                 <User className="w-3 h-3 mr-1" /> Assessed By
+               </div>
+               <p className="text-xs font-bold text-slate-900 dark:text-white">Phone Master AI</p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-10">
             {[
-              { label: 'Security Core', status: 'Protected', detail: 'v2.1.0 Stable', color: 'text-emerald-500' },
-              { label: 'System Files', status: 'Clean', detail: '14,205 Signatures Checked', color: 'text-emerald-500' },
-              { label: 'Battery Health', status: 'Good', detail: 'Normal Performance', color: 'text-emerald-500' },
-              { label: 'Memory Usage', status: 'Optimal', detail: 'Low Fragmentation', color: 'text-emerald-500' }
+              { label: 'Security Core', status: 'A+', detail: 'All signatures updated', color: 'text-emerald-500' },
+              { label: 'System Files', status: 'Pass', detail: 'No malware detected', color: 'text-emerald-500' },
+              { label: 'Battery Performance', status: 'Optimal', detail: 'Good health cycle', color: 'text-emerald-500' },
+              { label: 'Storage Health', status: 'A', detail: 'Low fragmentation', color: 'text-emerald-500' }
             ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+              <div key={i} className="flex items-center justify-between p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
                 <div>
                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{item.label}</p>
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.detail}</p>
+                  <p className="text-xs font-bold text-slate-600 dark:text-slate-300 italic">{item.detail}</p>
                 </div>
-                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${item.color}`}>{item.status}</span>
+                <div className="text-right">
+                  <span className={`text-xl font-black italic ${item.color}`}>{item.status}</span>
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-12 p-8 bg-blue-600 rounded-[2.5rem] text-white text-center shadow-xl shadow-blue-500/30">
-            <h4 className="text-xl font-black italic mb-2">Overall Score: 98/100</h4>
-            <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Excellent Device Health</p>
+          <div className="mt-12 p-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] text-white text-center shadow-xl shadow-blue-500/30">
+            <h4 className="text-3xl font-black italic mb-2 tracking-tighter">98% Secure</h4>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-80">Final Grade: Excellent</p>
           </div>
+
+          <p className="mt-10 text-center text-[9px] text-slate-400 font-black uppercase tracking-widest leading-relaxed">
+            Verified by BahatiTech Solutions Security Protocols<br/>
+            Product ID: PM-BK-2026-X
+          </p>
         </div>
       </div>
     );
@@ -144,11 +163,11 @@ export const SecurityScreen: React.FC<Props> = ({ language }) => {
       <div className="flex flex-col items-center justify-center py-12">
         <div className="relative w-72 h-72 md:w-96 md:h-96 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full border-[12px] border-slate-100 dark:border-slate-800 shadow-inner"></div>
-          {(scanning || testingSpeed) && (
-            <div className={`absolute inset-0 rounded-full border-[12px] border-t-transparent ${activeMode === 'antivirus' ? 'border-blue-600' : 'border-emerald-500'} animate-spin`}></div>
+          {scanning && (
+            <div className={`absolute inset-0 rounded-full border-[12px] border-t-transparent border-blue-600 animate-spin`}></div>
           )}
           
-          <div className="z-10 text-center">
+          <div className="z-10 text-center px-6">
             {activeMode === 'antivirus' && (
               scanning ? (
                 <div className="animate-pulse">
@@ -190,9 +209,9 @@ export const SecurityScreen: React.FC<Props> = ({ language }) => {
             {activeMode === 'antivirus' && scanComplete ? (
               <button 
                 onClick={() => setShowReport(true)}
-                className="w-full py-6 bg-emerald-600 text-white rounded-[2.5rem] font-black text-lg shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center"
+                className="w-full py-6 bg-blue-600 text-white rounded-[2.5rem] font-black text-lg shadow-2xl shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center"
               >
-                <FileText className="mr-3 w-6 h-6" /> View Report Card
+                <Award className="mr-3 w-6 h-6" /> View Report Card
               </button>
             ) : activeMode === 'antivirus' ? (
               <button onClick={startAntivirusScan} className="w-full py-6 bg-blue-600 text-white rounded-[2.5rem] font-black text-lg shadow-2xl shadow-blue-500/30 active:scale-95 transition-all">
