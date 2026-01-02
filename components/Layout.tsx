@@ -29,9 +29,8 @@ const NavItem: React.FC<{
     {active && (
       <div className={`absolute -top-1 w-8 h-1 rounded-full ${color.replace('text-', 'bg-')} blur-sm`}></div>
     )}
-    <Icon className={`w-5 h-5 transition-transform duration-500 ${active ? 'scale-125 translate-y-[-2px]' : ''}`} />
-    {/* Labels (name tags) are now always visible with slight opacity when inactive */}
-    <span className={`text-[8px] mt-1 font-black uppercase tracking-widest transition-all ${active ? 'opacity-100' : 'opacity-60'}`}>
+    <Icon className={`w-5 h-5 md:w-6 md:h-6 transition-transform duration-500 ${active ? 'scale-125 translate-y-[-2px]' : ''}`} />
+    <span className={`text-[8px] md:text-[10px] mt-1 font-black uppercase tracking-widest transition-all ${active ? 'opacity-100' : 'opacity-60'}`}>
       {label}
     </span>
   </button>
@@ -41,15 +40,25 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
   const t = translations[language].nav;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1 pb-24 overflow-hidden relative">
-        <div className="h-full w-full overflow-y-auto">
-          {children}
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
+      <main className="flex-1 pb-32 overflow-hidden relative">
+        <div className="h-full w-full overflow-y-auto scroll-smooth">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
+          
+          {/* Universal Footer Branding */}
+          <div className="py-16 text-center opacity-40 select-none pointer-events-none">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent via-slate-400 to-transparent mx-auto mb-6 opacity-20"></div>
+            <p className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-500 dark:text-slate-400">
+              BahatiTech Solutions • Ecosystem Pro
+            </p>
+          </div>
         </div>
       </main>
       
-      <nav className="fixed bottom-0 left-0 right-0 z-[200] safe-bottom pb-4 px-4">
-        <div className="glass rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] max-w-lg mx-auto h-20 flex justify-around items-center px-4">
+      <nav className="fixed bottom-0 left-0 right-0 z-[200] safe-bottom pb-6 px-4 pointer-events-none flex justify-center">
+        <div className="glass rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] w-full max-w-lg h-20 md:h-24 flex justify-around items-center px-6 pointer-events-auto border border-white/40 dark:border-white/10">
           <NavItem 
             tab="Documents" 
             label={t.Files}

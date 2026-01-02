@@ -1,8 +1,9 @@
 {
   "name": "Phone Master",
-  "description": "Premium Utility Toolkit featuring Bahati Tech Antivirus, Media OCR, and Secure Document Management. Developed by BahatiTech Solutions.",
+  "description": "Premium Utility Toolkit featuring Bahati Tech Antivirus, Real File System Memory Card Scan, Media OCR, and Secure Document Management. Developed by BahatiTech Solutions.",
   "requestFramePermissions": [
     "camera",
-    "microphone"
+    "microphone",
+    "geolocation"
   ]
 }

@@ -158,22 +158,45 @@ export const SettingsScreen: React.FC<SettingsProps> = ({
           </div>
         </section>
 
+        {/* PROMINENT FOOTER BRANDING */}
         <div className="pt-24 text-center">
-          <div className="relative inline-block mb-10">
-             <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-30 animate-pulse"></div>
-             <div className="relative w-28 h-28 bg-blue-600 rounded-[3rem] flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/40">
-                <ShieldCheck className="text-white w-14 h-14" />
+          <div className="relative inline-block mb-10 group">
+             <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity animate-pulse"></div>
+             <div className="relative w-32 h-32 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/40 transform group-hover:scale-110 transition-transform duration-500">
+                <ShieldCheck className="text-white w-16 h-16" />
              </div>
           </div>
           
-          <div className="bg-white dark:bg-slate-800 p-12 rounded-[4rem] border border-slate-100 dark:border-slate-700 shadow-sm inline-block w-full">
-            <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.4em] mb-4">{t.developedBy}</p>
-            <p className="text-3xl font-black text-blue-600 tracking-tight mb-8">BahatiTech Solutions</p>
-            <div className="h-px w-16 bg-slate-100 dark:bg-slate-700 mx-auto mb-8"></div>
-            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.3em]">{t.copyright}</p>
+          <div className="bg-white dark:bg-slate-800 p-12 md:p-16 rounded-[4rem] border border-slate-100 dark:border-slate-700 shadow-2xl inline-block w-full animate-in slide-in-from-bottom-12 duration-700">
+            <div className="mb-8">
+              <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.4em] mb-4 opacity-70">
+                {t.developedBy}
+              </p>
+              <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 tracking-tight italic">
+                BahatiTech Solutions
+              </h2>
+            </div>
+            
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-100 dark:to-slate-700"></div>
+              <div className="w-2 h-2 rounded-full bg-blue-500/20"></div>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-100 dark:to-slate-700"></div>
+            </div>
+            
+            <p className="text-[11px] md:text-xs text-slate-400 font-black uppercase tracking-[0.3em] leading-relaxed">
+              {t.copyright}
+            </p>
           </div>
           
-          <p className="mt-12 text-[10px] text-slate-400 font-black uppercase tracking-[0.6em] opacity-30">v2.1.0 BUILD STABLE • REL-KENYA • 2026</p>
+          <div className="mt-12 flex flex-col items-center gap-2 opacity-30 select-none">
+            <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.6em]">
+              v2.4.1 BUILD STABLE • REL-KENYA • 2026
+            </p>
+            <div className="flex gap-4">
+              <div className="w-8 h-1 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+              <div className="w-8 h-1 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
