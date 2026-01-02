@@ -3,8 +3,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Phone Master - Utility Toolkit</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Phone Master">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/192/3067/3067451.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -13,6 +22,8 @@
             background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
             color: #1e293b;
             min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
@@ -97,5 +108,15 @@
     <div class="colorful-blob bg-blue-300" style="top: -10%; left: -10%;"></div>
     <div class="colorful-blob bg-purple-300" style="bottom: -10%; right: -10%;"></div>
     <div id="root"></div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
+    </script>
 </body>
 </html>

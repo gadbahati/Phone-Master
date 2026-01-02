@@ -1,0 +1,24 @@
+
+{
+  "name": "Phone Master - Utility Toolkit",
+  "short_name": "Phone Master",
+  "description": "Premium Utility Toolkit featuring Bahati Tech Antivirus, Media OCR, and Secure Document Management.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3067/3067451.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/192/3067/3067451.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
