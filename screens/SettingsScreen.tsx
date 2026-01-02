@@ -12,7 +12,8 @@ import {
   Languages,
   CheckCircle2,
   MessageCircle,
-  PhoneCall
+  PhoneCall,
+  Lock
 } from 'lucide-react';
 import { Language, translations } from '../services/i18n';
 import { SupportModal } from '../components/SupportModal';
@@ -46,9 +47,12 @@ export const SettingsScreen: React.FC<SettingsProps> = ({
   };
 
   const handleRate = () => {
-    // Placeholder package name for Phone Master
     const packageName = 'com.bahatitech.phonemaster';
     window.open(`https://play.google.com/store/apps/details?id=${packageName}`, '_blank');
+  };
+
+  const handlePrivacy = () => {
+    window.open('https://bahatitech.com/privacy-policy', '_blank');
   };
 
   return (
@@ -64,7 +68,6 @@ export const SettingsScreen: React.FC<SettingsProps> = ({
         <section>
           <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 px-6">Preference</h3>
           <div className="bg-white dark:bg-slate-800 rounded-[3rem] overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
-            {/* Language Switcher */}
             <div className="p-6 md:p-10 border-b border-slate-50 dark:border-slate-700 bg-slate-50/20 dark:bg-slate-900/10">
               <div className="flex items-center mb-8">
                 <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mr-5 shadow-sm">
@@ -105,53 +108,38 @@ export const SettingsScreen: React.FC<SettingsProps> = ({
                 <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform ${darkMode ? 'translate-x-8' : 'translate-x-0'}`} />
               </div>
             </button>
-
-            <button 
-              onClick={() => setWidgetEnabled(!widgetEnabled)}
-              className="w-full flex items-center justify-between p-6 md:p-10 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors border-t border-slate-50 dark:border-slate-700"
-            >
-              <div className="flex items-center">
-                <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center mr-5 shadow-sm">
-                  <LayoutIcon className="w-7 h-7 text-indigo-600" />
-                </div>
-                <div className="text-left">
-                  <span className="font-black text-base text-slate-900 dark:text-white block uppercase tracking-tight">{t.widgetTitle}</span>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Floating 4x2 Control Center</span>
-                </div>
-              </div>
-              <div className={`w-16 h-8 rounded-full p-1.5 transition-all ${widgetEnabled ? 'bg-indigo-600' : 'bg-slate-200'}`}>
-                <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform ${widgetEnabled ? 'translate-x-8' : 'translate-x-0'}`} />
-              </div>
-            </button>
           </div>
         </section>
 
         <section>
           <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 px-6">Support & Help</h3>
           <div className="bg-white dark:bg-slate-800 rounded-[3rem] overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700 divide-y divide-slate-50 dark:divide-slate-700">
-            <button 
-              onClick={() => setShowSupport(true)}
-              className="w-full flex items-center justify-between p-6 md:p-10 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all group"
-            >
+            <button onClick={() => setShowSupport(true)} className="w-full flex items-center justify-between p-6 md:p-10 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all group">
               <div className="flex items-center">
                 <div className="w-14 h-14 bg-rose-100 dark:bg-rose-900/30 rounded-2xl flex items-center justify-center mr-5 shadow-sm group-hover:scale-110 transition-transform">
                   <Heart className="w-7 h-7 text-rose-500" />
                 </div>
                 <span className="font-black text-base text-slate-900 dark:text-white uppercase tracking-tight">{t.support}</span>
               </div>
-              <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-blue-600 transition-colors" />
+              <ChevronRight className="w-6 h-6 text-slate-300" />
             </button>
-            <button 
-              onClick={handleRate}
-              className="w-full flex items-center justify-between p-6 md:p-10 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all group"
-            >
+            <button onClick={handleRate} className="w-full flex items-center justify-between p-6 md:p-10 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all group">
               <div className="flex items-center">
                 <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mr-5 shadow-sm group-hover:scale-110 transition-transform">
                   <Star className="w-7 h-7 text-amber-500" />
                 </div>
                 <span className="font-black text-base text-slate-900 dark:text-white uppercase tracking-tight">{t.rate}</span>
               </div>
-              <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-blue-600 transition-colors" />
+              <ChevronRight className="w-6 h-6 text-slate-300" />
+            </button>
+            <button onClick={handlePrivacy} className="w-full flex items-center justify-between p-6 md:p-10 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all group">
+              <div className="flex items-center">
+                <div className="w-14 h-14 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mr-5 shadow-sm group-hover:scale-110 transition-transform">
+                  <Lock className="w-7 h-7 text-slate-600" />
+                </div>
+                <span className="font-black text-base text-slate-900 dark:text-white uppercase tracking-tight">Privacy Policy</span>
+              </div>
+              <ChevronRight className="w-6 h-6 text-slate-300" />
             </button>
           </div>
         </section>
@@ -159,18 +147,12 @@ export const SettingsScreen: React.FC<SettingsProps> = ({
         <section>
           <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 px-6">{t.contactUs}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button 
-              onClick={handleWhatsApp}
-              className="flex items-center justify-center gap-4 p-8 bg-emerald-600 text-white rounded-[2.5rem] shadow-xl shadow-emerald-500/30 active:scale-95 transition-all group hover:bg-emerald-700"
-            >
-              <MessageCircle className="w-8 h-8 group-hover:animate-bounce" />
+            <button onClick={handleWhatsApp} className="flex items-center justify-center gap-4 p-8 bg-emerald-600 text-white rounded-[2.5rem] shadow-xl shadow-emerald-500/30 active:scale-95 transition-all group hover:bg-emerald-700">
+              <MessageCircle className="w-8 h-8" />
               <span className="font-black text-sm uppercase tracking-widest">{t.whatsapp}</span>
             </button>
-            <button 
-              onClick={handleCall}
-              className="flex items-center justify-center gap-4 p-8 bg-blue-600 text-white rounded-[2.5rem] shadow-xl shadow-blue-500/30 active:scale-95 transition-all group hover:bg-blue-700"
-            >
-              <PhoneCall className="w-8 h-8 group-hover:animate-bounce" />
+            <button onClick={handleCall} className="flex items-center justify-center gap-4 p-8 bg-blue-600 text-white rounded-[2.5rem] shadow-xl shadow-blue-500/30 active:scale-95 transition-all group hover:bg-blue-700">
+              <PhoneCall className="w-8 h-8" />
               <span className="font-black text-sm uppercase tracking-widest">{t.call}</span>
             </button>
           </div>
