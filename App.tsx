@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { TabType } from './types';
@@ -23,7 +22,6 @@ const App: React.FC = () => {
   const [showWidget, setShowWidget] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'loading' } | null>(null);
   
-  // Speed Monitor Global State
   const [speedOverlayEnabled, setSpeedOverlayEnabled] = useState(false);
   const [currentSpeed, setCurrentSpeed] = useState({ down: 0.0, up: 0.0 });
 
@@ -60,12 +58,10 @@ const App: React.FC = () => {
     initAntivirus();
   }, []);
 
-  // Responsive Speed Logic
   useEffect(() => {
     if (!speedOverlayEnabled) return;
 
     const interval = setInterval(() => {
-      // High-frequency jitter for realistic feel
       const dBase = 1.8;
       const uBase = 0.6;
       const jitter = Math.random() * 0.9;
@@ -139,7 +135,6 @@ const App: React.FC = () => {
 
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab} darkMode={darkMode} language={language}>
-      {/* High-Fidelity Responsive Status Bar Speed Overlay */}
       {speedOverlayEnabled && (
         <div className="fixed top-0 left-0 right-0 z-[1000] pointer-events-none flex justify-center pt-1 animate-in slide-in-from-top-full duration-500">
           <div className="bg-black/80 backdrop-blur-xl px-4 py-1.5 rounded-full border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-5 text-white">
