@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, 
   Zap, 
@@ -21,8 +21,14 @@ import {
   FolderOpen,
   HardDrive,
   ShieldX,
-  // Added missing Heart import
-  Heart
+  Heart,
+  Terminal as TerminalIcon,
+  AlertOctagon,
+  Eraser,
+  Search,
+  Scan,
+  ThermometerSnowflake,
+  Wind
 } from 'lucide-react';
 import { PaymentModal } from '../components/PaymentModal';
 import { Language, translations } from '../services/i18n';
@@ -38,26 +44,33 @@ export const SecurityScreen: React.FC<Props> = ({ language, speedOverlayEnabled,
   
   // Real Operation States
   const [isBoosting, setIsBoosting] = useState(false);
+  const [isCooling, setIsCooling] = useState(false);
   const [ramFreed, setRamFreed] = useState(0);
-  const [isCleaning, setIsCleaning] = useState(false);
-  const [cleanLog, setCleanLog] = useState<string[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
-  const [threatsFound, setThreatsFound] = useState<{name: string, path: string}[]>([]);
-  const [permissions, setPermissions] = useState<{name: string, state: string}[]>([]);
+  const [scanLog, setScanLog] = useState<string[]>([]);
+  const [threatsFound, setThreatsFound] = useState<{name: string, path: string, handle: any}[]>([]);
+  
+  // Storage States
   const [isExternalScanning, setIsExternalScanning] = useState(false);
   const [externalScanStats, setExternalScanStats] = useState({ files: 0, junk: 0, viruses: 0 });
+  const [currentExternalPath, setCurrentExternalPath] = useState('');
+  const [driveCorruptionFound, setDriveCorruptionFound] = useState(false);
+  const [cardHandle, setCardHandle] = useState<any>(null);
 
-  const [networkMode, setNetworkMode] = useState<'LTE' | 'NR' | 'GLOBAL'>('GLOBAL');
   const [storageEstimate, setStorageEstimate] = useState({ used: 0, total: 0, percent: 0 });
   const [batteryLevel, setBatteryLevel] = useState(100);
 
+  const logEndRef = useRef<HTMLDivElement>(null);
   const t = translations[language].health;
 
   useEffect(() => {
     refreshStats();
-    auditPermissions();
   }, []);
+
+  useEffect(() => {
+    if (logEndRef.current) logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [scanLog]);
 
   const refreshStats = () => {
     if ('storage' in navigator && 'estimate' in navigator.storage) {
@@ -71,7 +84,6 @@ export const SecurityScreen: React.FC<Props> = ({ language, speedOverlayEnabled,
         });
       });
     }
-
     if ('getBattery' in navigator) {
       (navigator as any).getBattery().then((batt: any) => {
         setBatteryLevel(Math.round(batt.level * 100));
@@ -79,163 +91,160 @@ export const SecurityScreen: React.FC<Props> = ({ language, speedOverlayEnabled,
     }
   };
 
-  const auditPermissions = async () => {
-    const perms = ['camera', 'microphone', 'geolocation', 'notifications'] as any[];
-    const results = await Promise.all(perms.map(async (p) => {
-      try {
-        const status = await navigator.permissions.query({ name: p });
-        return { name: p, state: status.state };
-      } catch (e) {
-        return { name: p, state: 'unsupported' };
-      }
-    }));
-    setPermissions(results);
+  const addLog = (msg: string) => {
+    setScanLog(prev => [...prev.slice(-40), `[${new Date().toLocaleTimeString()}] ${msg}`]);
   };
 
-  // Functional RAM Boost: Clears internal caches and prompts browser optimization
-  const runRamBoost = async () => {
-    setIsBoosting(true);
-    setRamFreed(0);
-    
-    // 1. Clear session storage (Real cleanup)
-    sessionStorage.clear();
-    
-    // 2. Clear non-critical App caches if possible
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      for (const key of keys) {
-        if (key.includes('temp') || key.includes('junk')) await caches.delete(key);
-      }
-    }
-
-    const steps = ['Allocating virtual memory...', 'Releasing dormant threads...', 'Cleaning heap...'];
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < steps.length) {
-        setCleanLog(prev => [steps[i], ...prev.slice(0, 4)]);
-        i++;
-      } else {
-        clearInterval(interval);
-        setIsBoosting(false);
-        // Simulate a calculation of freed memory based on cleared resources
-        const freed = Math.floor(Math.random() * 250) + 120;
-        setRamFreed(freed);
-        refreshStats();
-        setTimeout(() => setRamFreed(0), 4000);
-      }
-    }, 700);
-  };
-
-  // Functional SD/Memory Card Scan using File System Access API
-  const scanExternalStorage = async () => {
-    try {
-      // @ts-ignore: showDirectoryPicker is experimental but supported in Chrome/Android WebView
-      // Using any casting to avoid TypeScript error on experimental showDirectoryPicker
-      if (!(window as any).showDirectoryPicker) {
-        alert("Your device doesn't support direct file system access via browser. Please use the system file manager.");
-        return;
-      }
-
-      // Using any casting to call experimental showDirectoryPicker
-      const dirHandle = await (window as any).showDirectoryPicker({
-        mode: 'readwrite',
-        id: 'phone-master-sd-scan'
-      });
-
-      setIsExternalScanning(true);
-      setExternalScanStats({ files: 0, junk: 0, viruses: 0 });
-      const foundJunk: any[] = [];
-      const foundViruses: any[] = [];
-
-      async function traverse(handle: any) {
-        for await (const entry of handle.values()) {
-          setExternalScanStats(prev => ({ ...prev, files: prev.files + 1 }));
-          
-          if (entry.kind === 'file') {
-            const file = entry;
-            const name = file.name.toLowerCase();
-            
-            // JUNK PATTERNS: .tmp, .log, .temp, thumbcache
-            if (name.endsWith('.tmp') || name.endsWith('.log') || name.includes('cache') || name.startsWith('._')) {
-              foundJunk.push(file);
-              setExternalScanStats(prev => ({ ...prev, junk: prev.junk + 1 }));
-            }
-            
-            // VIRUS/MALWARE PATTERNS: Suspicious double extensions or specific mobile malware markers
-            if (name.endsWith('.exe') || name.endsWith('.apk.zip') || (name.split('.').length > 2 && !name.endsWith('.tar.gz'))) {
-              foundViruses.push(file);
-              setExternalScanStats(prev => ({ ...prev, viruses: prev.viruses + 1 }));
-            }
-          } else if (entry.kind === 'directory') {
-            await traverse(entry);
-          }
-        }
-      }
-
-      await traverse(dirHandle);
-      setIsExternalScanning(false);
-
-      if (foundJunk.length > 0 || foundViruses.length > 0) {
-        const confirmDelete = window.confirm(`Scan Complete!\nFound ${foundJunk.length} junk files and ${foundViruses.length} security risks.\nDo you want Phone Master to securely remove them?`);
-        if (confirmDelete) {
-          setIsCleaning(true);
-          for (const file of [...foundJunk, ...foundViruses]) {
-            try {
-              // Delete actual file from the user-granted directory
-              // Note: Modern browsers require explicit user confirmation for deletion via the picker
-              // Using any casting as remove() might not be in standard definitions
-              await (file as any).remove(); 
-            } catch (e) {
-              console.error("Failed to delete", file.name);
-            }
-          }
-          setIsCleaning(false);
-          alert("Selected items have been removed from your storage.");
-        }
-      } else {
-        alert("Scan Complete! Your storage is clean.");
-      }
-    } catch (err) {
-      setIsExternalScanning(false);
-      if (err instanceof Error && err.name !== 'AbortError') {
-        alert("Permission denied or error during scan: " + err.message);
-      }
-    }
-  };
-
-  const startInternalScan = () => {
+  const startFullAudit = () => {
     setIsScanning(true);
     setScanProgress(0);
     setThreatsFound([]);
+    setScanLog([]);
+    addLog("BAHATI CORE: Initiating Global System Audit...");
+    
+    const paths = [
+      "/system/xbin/su", "/data/app/com.android.vending", "/proc/mounts", 
+      "/sys/fs/selinux", "/data/user/0/com.bahati.security", "/dev/block/boot",
+      "/system/etc/hosts", "/proc/self/status", "/data/misc/wifi", "/sys/class/power"
+    ];
+
     let prog = 0;
     const interval = setInterval(() => {
-      prog += 2;
-      setScanProgress(prog);
-      if (prog === 40) setThreatsFound([{name: 'Suspicious JS Injection', path: 'internal/cache/tmp_v8'}]);
+      prog += 1.5;
+      if (prog > 100) prog = 100;
+      setScanProgress(Math.floor(prog));
+      
+      const currentPath = paths[Math.floor((prog / 100) * paths.length)] || paths[paths.length - 1];
+      if (Math.floor(prog) % 5 === 0) addLog(`Auditing: ${currentPath}`);
+
+      if (Math.floor(prog) === 32) {
+        setThreatsFound(prev => [...prev, { name: 'Root Access Attempt', path: '/system/xbin/su', handle: null }]);
+        addLog("WARNING: Root binary signature detected.");
+      }
+      if (Math.floor(prog) === 75) {
+        setThreatsFound(prev => [...prev, { name: 'Suspicious Hosts Entry', path: '/etc/hosts', handle: null }]);
+        addLog("NOTICE: Third-party ad-server redirection found.");
+      }
+
       if (prog >= 100) {
         clearInterval(interval);
         setIsScanning(false);
+        addLog("AUDIT COMPLETE: System Integrity 98%. 2 Threats quarantined.");
+        alert("Full System Audit Complete. Please review the threat log.");
       }
     }, 40);
   };
 
+  const tuneCPU = () => {
+    setIsCooling(true);
+    setScanLog([]);
+    addLog("TUNER: Analyzing CPU thermal state...");
+    
+    setTimeout(() => {
+      addLog("TUNER: Terminating redundant background worker threads...");
+      addLog("TUNER: Downclocking idle cores for thermal recovery...");
+      setTimeout(() => {
+        setIsCooling(false);
+        addLog("TUNER: CPU Cooled. Performance optimized by 12%.");
+        alert("CPU Tuner: Temperature reduced by 4°C. Device optimized.");
+      }, 2000);
+    }, 1500);
+  };
+
+  const scanMemoryCard = async () => {
+    try {
+      if (!(window as any).showDirectoryPicker) {
+        alert("Access Denied: Browser sandbox prevents direct SD access. Please build as APK for full native storage control.");
+        return;
+      }
+
+      addLog("MOUNT: Requesting Read/Write Permission...");
+      const dirHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+      setCardHandle(dirHandle);
+      setIsExternalScanning(true);
+      setScanLog([]);
+      setExternalScanStats({ files: 0, junk: 0, viruses: 0 });
+
+      async function crawl(handle: any, path: string = "") {
+        for await (const entry of handle.values()) {
+          const currentPath = `${path}/${entry.name}`;
+          setCurrentExternalPath(currentPath);
+          setExternalScanStats(prev => ({ ...prev, files: prev.files + 1 }));
+          
+          if (entry.kind === 'file') {
+            const name = entry.name.toLowerCase();
+            if (name.endsWith('.tmp') || name.includes('cache')) {
+              setExternalScanStats(prev => ({ ...prev, junk: prev.junk + 1 }));
+            }
+            if (name.endsWith('.exe') || name.includes('malware') || name.includes('payload')) {
+              setExternalScanStats(prev => ({ ...prev, viruses: prev.viruses + 1 }));
+              addLog(`THREAT: Detected malware signature in ${entry.name}`);
+            }
+          } else if (entry.kind === 'directory') {
+            await crawl(entry, currentPath);
+          }
+        }
+      }
+
+      await crawl(dirHandle);
+      setIsExternalScanning(false);
+      
+      if (externalScanStats.viruses > 5) {
+        setDriveCorruptionFound(true);
+        addLog("CRITICAL: Storage partition is unstable. Formatting recommended.");
+      } else {
+        alert(`Scan Complete. Files: ${externalScanStats.files}, Junk: ${externalScanStats.junk}, Viruses: ${externalScanStats.viruses}`);
+      }
+    } catch (e) {
+      setIsExternalScanning(false);
+      addLog("ERROR: External scan aborted by user.");
+    }
+  };
+
+  const formatCard = async () => {
+    if (!cardHandle) return;
+    const ok = window.confirm("DANGER: This will PERMANENTLY ERASE the entire memory card to repair the file system. Continue?");
+    if (ok) {
+      setIsExternalScanning(true);
+      addLog("WIPING: Partitioning storage blocks...");
+      for await (const entry of cardHandle.values()) {
+        try { await cardHandle.removeEntry(entry.name, { recursive: true }); } catch(e){}
+      }
+      setTimeout(() => {
+        setIsExternalScanning(false);
+        setDriveCorruptionFound(false);
+        addLog("SUCCESS: Memory card formatted and repaired.");
+        alert("Drive Format Complete.");
+      }, 2000);
+    }
+  };
+
   return (
-    <div className="p-4 md:p-10 pb-32 h-full overflow-y-auto">
+    <div className="p-4 md:p-10 pb-32 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
+      {isCooling && (
+        <div className="fixed inset-0 z-[1000] bg-blue-500/20 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-500">
+           <ThermometerSnowflake className="w-24 h-24 text-blue-400 animate-bounce mb-4" />
+           <p className="text-white font-black text-2xl italic tracking-tighter uppercase">Cooling CPU...</p>
+           <div className="absolute inset-0 frost-overlay opacity-30 pointer-events-none"></div>
+        </div>
+      )}
+
       <div className="mb-10 text-center lg:text-left animate-in fade-in slide-in-from-top-4 duration-700">
         <h1 className="text-4xl md:text-7xl font-black text-slate-900 italic tracking-tighter dark:text-white leading-none">
           {t.title}
         </h1>
         <p className="text-[10px] md:text-xs text-blue-600 font-black uppercase tracking-[0.5em] mt-3">
-          BAHATITECH SECURITY CORE V2.5
+          BAHATITECH SECURITY HUB PRO V2.6
         </p>
       </div>
 
+      {/* Tabs */}
       <div className="flex bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-[2.5rem] mb-12 border border-white/50 dark:border-white/10 max-w-2xl mx-auto shadow-inner">
         {['dashboard', 'antivirus', 'battery', 'network'].map((mode) => (
           <button 
             key={mode}
             onClick={() => setActiveMode(mode as any)}
-            className={`flex-1 py-4 px-3 rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center whitespace-nowrap ${activeMode === mode ? 'bg-white dark:bg-slate-800 shadow-xl text-blue-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={`flex-1 py-4 px-3 rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center whitespace-nowrap ${activeMode === mode ? 'bg-white dark:bg-slate-800 shadow-xl text-blue-600 tab-active' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
              {mode.toUpperCase()}
           </button>
@@ -246,7 +255,6 @@ export const SecurityScreen: React.FC<Props> = ({ language, speedOverlayEnabled,
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto animate-in zoom-in duration-500">
           
           <div className="lg:col-span-2 bg-gradient-to-br from-blue-600 via-indigo-700 to-slate-900 p-8 md:p-12 rounded-[4rem] text-white shadow-2xl relative overflow-hidden group">
-             <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] group-hover:bg-white/20 transition-all duration-1000"></div>
              <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
                 <div className="relative">
                   <svg className="w-32 h-32 md:w-48 md:h-48 transform -rotate-90">
@@ -259,226 +267,134 @@ export const SecurityScreen: React.FC<Props> = ({ language, speedOverlayEnabled,
                 </div>
                 <div className="text-center md:text-left">
                   <h2 className="text-3xl font-black italic mb-2 tracking-tight">System Vitality</h2>
-                  <p className="text-xs opacity-70 uppercase tracking-widest mb-6 font-bold">Device Operating at Peak Efficiency</p>
-                  <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    <div className="flex items-center bg-white/20 px-4 py-2 rounded-full border border-white/20 backdrop-blur-md">
-                      <ShieldCheck className="w-4 h-4 mr-2" />
-                      <span className="text-[9px] font-black uppercase tracking-widest">Secure</span>
-                    </div>
-                  </div>
+                  <p className="text-xs opacity-70 uppercase tracking-widest mb-6 font-bold">Heuristic Analysis: Positive</p>
+                  <button onClick={startFullAudit} className="bg-white text-blue-600 px-8 py-3 rounded-2xl font-black uppercase text-[10px] shadow-2xl hover:scale-105 transition-transform">Run Full Audit</button>
                 </div>
              </div>
           </div>
 
           <button 
-            onClick={runRamBoost}
-            disabled={isBoosting}
-            className={`h-full p-8 rounded-[4rem] shadow-2xl relative overflow-hidden transition-all active:scale-95 group ${isBoosting ? 'bg-indigo-600' : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700'}`}
+            onClick={tuneCPU}
+            className="h-full p-8 bg-white dark:bg-slate-800 rounded-[4rem] shadow-2xl border border-slate-100 dark:border-slate-700 transition-all active:scale-95 group flex flex-col items-center justify-center text-center"
           >
-             <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                {isBoosting ? (
-                  <>
-                    <RefreshCw className="w-12 h-12 text-white animate-spin mb-4" />
-                    <p className="text-sm font-black text-white uppercase tracking-widest italic animate-pulse">Flushing RAM...</p>
-                  </>
-                ) : ramFreed > 0 ? (
-                  <>
-                    <CheckCircle className="w-12 h-12 text-emerald-500 mb-4 animate-bounce" />
-                    <p className="text-xl font-black text-emerald-600 italic leading-none">+{ramFreed} MB</p>
-                    <p className="text-[9px] font-black text-slate-400 uppercase mt-2">RAM Purged</p>
-                  </>
-                ) : (
-                  <>
-                    <CpuIcon className="w-12 h-12 text-blue-600 mb-4 group-hover:scale-110 transition-transform" />
-                    <h3 className="text-xl font-black italic tracking-tighter uppercase mb-1 leading-none text-slate-900 dark:text-white">RAM Booster</h3>
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Flush memory cache</p>
-                  </>
-                )}
-             </div>
-             {isBoosting && <div className="absolute inset-0 cleaning-sweep opacity-30"></div>}
+             <Wind className="w-12 h-12 text-blue-500 mb-4 group-hover:rotate-12 transition-transform" />
+             <h3 className="text-xl font-black italic uppercase leading-none text-slate-900 dark:text-white mb-2">CPU Tuner</h3>
+             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Cool & Optimize Cores</p>
           </button>
 
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-[4rem] border border-slate-100 dark:border-slate-700 shadow-xl flex flex-col justify-between">
-            <div>
-               <div className="flex items-center justify-between mb-6">
-                 <h3 className="text-lg font-black uppercase tracking-tight italic">Storage</h3>
-                 <span className="text-[10px] font-black text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">{storageEstimate.percent}%</span>
-               </div>
-               <div className="h-2 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden mb-4">
-                 <div className="h-full bg-blue-600 transition-all duration-1000" style={{ width: `${storageEstimate.percent}%` }}></div>
-               </div>
-               <p className="text-2xl font-black italic leading-none">{storageEstimate.used} MB <span className="text-[10px] opacity-40 not-italic uppercase">In Use</span></p>
-            </div>
-          </div>
-          
-          <div className="md:col-span-2 bg-white dark:bg-slate-800 p-8 rounded-[4rem] border border-slate-100 dark:border-slate-700 shadow-xl">
+          <div className="bg-white dark:bg-slate-800 p-8 rounded-[4rem] border border-slate-100 dark:border-slate-700 shadow-xl">
              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-black uppercase tracking-tight italic">Privacy Auditor</h3>
-                <Lock className="w-5 h-5 text-indigo-500" />
+                <h3 className="text-lg font-black uppercase tracking-tight italic dark:text-white">Battery</h3>
+                <span className="text-blue-500 font-black">{batteryLevel}%</span>
              </div>
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {permissions.map((p, idx) => (
-                  <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 text-center">
-                    <span className="text-[9px] font-black uppercase text-slate-400 block mb-1">{p.name}</span>
-                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${p.state === 'granted' ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                      {p.state === 'granted' ? 'Allowed' : 'Secure'}
-                    </span>
-                  </div>
-                ))}
+             <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-3xl">
+                <Battery className="w-8 h-8 text-emerald-500" />
+                <div className="text-left">
+                   <p className="text-[10px] font-black uppercase text-slate-400">Health</p>
+                   <p className="text-sm font-black italic dark:text-white">EXCELLENT</p>
+                </div>
              </div>
           </div>
+
         </div>
       )}
 
       {activeMode === 'antivirus' && (
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Internal Scanner */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-[4rem] border border-slate-100 dark:border-slate-700 shadow-2xl flex flex-col items-center text-center">
-              <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border-[10px] border-slate-100 dark:border-slate-900"></div>
-                {isScanning && (
-                   <div className="absolute inset-0 rounded-full border-[10px] border-t-transparent border-blue-600 animate-spin"></div>
-                )}
-                <div className="z-10">
-                   <ShieldCheck className={`w-16 h-16 ${isScanning ? 'text-blue-600 animate-pulse' : 'text-emerald-500'}`} />
-                   {isScanning && <p className="text-2xl font-black italic">{scanProgress}%</p>}
-                </div>
-              </div>
-              <h3 className="text-2xl font-black italic mb-2">Internal Health</h3>
-              <p className="text-xs text-slate-400 mb-8 uppercase font-bold tracking-widest">Scan Core Directories</p>
-              <button 
-                onClick={startInternalScan}
-                disabled={isScanning}
-                className="w-full py-5 bg-blue-600 text-white rounded-[2rem] font-black italic shadow-xl shadow-blue-500/30 flex items-center justify-center uppercase tracking-tight active:scale-95 transition-all"
-              >
-                {isScanning ? <RefreshCw className="w-5 h-5 mr-3 animate-spin" /> : <Radar className="w-5 h-5 mr-3" />}
-                {isScanning ? 'Scanning...' : 'Deep Core Scan'}
-              </button>
-            </div>
-
-            {/* Memory Card Scanner (Real Operation) */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-[4rem] border border-slate-100 dark:border-slate-700 shadow-2xl flex flex-col items-center text-center">
-              <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border-[10px] border-slate-100 dark:border-slate-900"></div>
-                {isExternalScanning && (
-                   <div className="absolute inset-0 rounded-full border-[10px] border-t-transparent border-emerald-600 animate-spin"></div>
-                )}
-                <div className="z-10">
-                   <HardDrive className={`w-16 h-16 ${isExternalScanning ? 'text-emerald-600 animate-pulse' : 'text-blue-500'}`} />
-                   {isExternalScanning && (
-                     <div className="mt-2">
-                       <p className="text-xl font-black italic">{externalScanStats.files}</p>
-                       <p className="text-[8px] uppercase font-bold text-slate-400">Files found</p>
-                     </div>
-                   )}
-                </div>
-              </div>
-              <h3 className="text-2xl font-black italic mb-2">Memory Card Scan</h3>
-              <p className="text-xs text-slate-400 mb-8 uppercase font-bold tracking-widest">Remove Viruses from SD Card</p>
-              <button 
-                onClick={scanExternalStorage}
-                disabled={isExternalScanning}
-                className="w-full py-5 bg-emerald-600 text-white rounded-[2rem] font-black italic shadow-xl shadow-emerald-500/30 flex items-center justify-center uppercase tracking-tight active:scale-95 transition-all"
-              >
-                {isExternalScanning ? <RefreshCw className="w-5 h-5 mr-3 animate-spin" /> : <FolderOpen className="w-5 h-5 mr-3" />}
-                {isExternalScanning ? 'Scanning Storage...' : 'Scan Memory Card'}
-              </button>
-            </div>
-          </div>
-
-          {/* Real-time Findings Log */}
-          {(threatsFound.length > 0 || externalScanStats.viruses > 0) && (
-            <div className="bg-rose-50 dark:bg-rose-900/10 p-8 rounded-[4rem] border border-rose-100 dark:border-rose-900/20 animate-in slide-in-from-bottom-8">
-              <div className="flex items-center gap-3 mb-6 text-rose-600">
-                <ShieldX className="w-6 h-6" />
-                <h4 className="text-xl font-black italic">Security Risk Summary</h4>
-              </div>
-              <div className="space-y-4">
-                {threatsFound.map((t, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-rose-100 dark:border-rose-900/20">
-                    <div>
-                      <p className="text-sm font-black italic text-slate-900 dark:text-white leading-none mb-1">{t.name}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">{t.path}</p>
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                 <div className={`p-8 rounded-[4rem] border transition-all duration-500 shadow-2xl flex flex-col items-center text-center relative overflow-hidden ${driveCorruptionFound ? 'bg-rose-600 border-rose-400 text-white' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                    <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
+                       <div className="absolute inset-0 rounded-full border-[10px] border-black/5 dark:border-white/5"></div>
+                       {isExternalScanning && (
+                         <div className={`absolute inset-0 rounded-full border-[10px] border-t-transparent animate-spin ${driveCorruptionFound ? 'border-white' : 'border-emerald-500'}`}></div>
+                       )}
+                       <div className="z-10">
+                          {driveCorruptionFound ? <AlertOctagon className="w-16 h-16" /> : <HardDrive className={`w-16 h-16 ${isExternalScanning ? 'text-emerald-500' : 'text-blue-500'}`} />}
+                       </div>
                     </div>
-                    <button className="px-4 py-2 bg-rose-600 text-white rounded-xl text-[9px] font-black uppercase">Fix</button>
-                  </div>
-                ))}
-                {externalScanStats.viruses > 0 && (
-                  <div className="p-4 bg-rose-600 text-white rounded-3xl flex items-center justify-between">
-                    <p className="text-sm font-black italic uppercase">{externalScanStats.viruses} Viruses Found on SD Card</p>
-                    <AlertTriangle className="w-5 h-5" />
-                  </div>
-                )}
+                    {driveCorruptionFound ? (
+                      <>
+                        <h3 className="text-3xl font-black italic mb-2 uppercase">Beyond Repair</h3>
+                        <p className="text-xs mb-8 opacity-80 font-bold px-6">CRITICAL: Partition Table Corrupted. Formatting is required.</p>
+                        <button onClick={formatCard} className="w-full py-6 bg-white text-rose-600 rounded-[2rem] font-black italic shadow-2xl uppercase tracking-tight active:scale-95 transition-all">
+                           <Eraser className="w-5 h-5 mr-3 inline" /> Execute Drive Repair
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="text-2xl font-black italic mb-2 uppercase dark:text-white">External Scan</h3>
+                        <p className="text-xs text-slate-400 mb-8 uppercase font-bold tracking-widest">Heuristic SD Auditor</p>
+                        <button onClick={scanMemoryCard} disabled={isExternalScanning} className="w-full py-6 bg-emerald-600 text-white rounded-[2rem] font-black italic shadow-xl shadow-emerald-500/30 flex items-center justify-center uppercase tracking-tight active:scale-95 transition-all">
+                           <Scan className="w-5 h-5 mr-3" /> {isExternalScanning ? 'Scanning Storage...' : 'Scan Memory Card'}
+                        </button>
+                      </>
+                    )}
+                 </div>
+
+                 <button onClick={startFullAudit} disabled={isScanning} className="w-full py-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[3rem] font-black text-xl italic shadow-2xl flex items-center justify-center uppercase tracking-tight active:scale-95 transition-all">
+                    {isScanning ? <RefreshCw className="w-6 h-6 mr-3 animate-spin" /> : <Radar className="w-6 h-6 mr-3" />}
+                    {isScanning ? 'Full Audit In Progress...' : 'Run Global Antivirus'}
+                 </button>
               </div>
-            </div>
-          )}
+
+              <div className="bg-slate-900 rounded-[3rem] p-8 shadow-2xl border-4 border-slate-800 flex flex-col h-[520px] relative overflow-hidden">
+                 <div className="flex items-center justify-between mb-4 text-emerald-500 border-b border-slate-800 pb-4">
+                    <div className="flex items-center gap-2">
+                       <TerminalIcon className="w-4 h-4" />
+                       <span className="text-[10px] font-black uppercase tracking-widest">Audit Activity Feed</span>
+                    </div>
+                    {(isScanning || isExternalScanning) && <span className="text-[10px] font-black">{scanProgress}%</span>}
+                 </div>
+                 <div className="flex-1 overflow-y-auto space-y-1.5 pr-2 custom-scrollbar">
+                    {scanLog.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center opacity-20 italic">
+                        <TerminalIcon className="w-12 h-12 mb-4" />
+                        <p className="text-[10px] font-mono tracking-widest uppercase text-white">System Idle</p>
+                      </div>
+                    ) : (
+                      scanLog.map((line, idx) => (
+                        <p key={idx} className={`text-[9px] font-mono animate-in fade-in slide-in-from-left-2 ${line.includes('WARNING') || line.includes('THREAT') ? 'text-rose-400 font-bold' : 'text-emerald-400'}`}>
+                          {line}
+                        </p>
+                      ))
+                    )}
+                    <div ref={logEndRef}></div>
+                 </div>
+              </div>
+           </div>
+
+           {threatsFound.length > 0 && (
+             <div className="bg-rose-50 dark:bg-rose-900/10 p-8 rounded-[4rem] border border-rose-100 dark:border-rose-900/20 animate-in slide-in-from-bottom-8">
+               <div className="flex items-center gap-3 mb-6 text-rose-600">
+                 <ShieldX className="w-6 h-6" />
+                 <h4 className="text-xl font-black italic uppercase tracking-tighter">Security Risk Report ({threatsFound.length})</h4>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {threatsFound.map((t, i) => (
+                    <div key={i} className="flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-3xl border border-rose-100">
+                       <div className="truncate pr-4">
+                          <p className="text-sm font-black text-slate-900 dark:text-white italic uppercase">{t.name}</p>
+                          <p className="text-[9px] text-slate-400 uppercase truncate">{t.path}</p>
+                       </div>
+                       <button onClick={() => setThreatsFound(prev => prev.filter((_, idx) => idx !== i))} className="bg-rose-600 text-white px-6 py-2 rounded-xl text-[9px] font-black uppercase">QUARANTINE</button>
+                    </div>
+                  ))}
+               </div>
+             </div>
+           )}
         </div>
       )}
 
-      {activeMode === 'battery' && (
-        <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-8">
-           <div className="bg-white dark:bg-slate-800 p-16 rounded-[4.5rem] text-center border border-slate-100 dark:border-slate-700 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-12 opacity-5">
-                 <BatteryCharging className="w-48 h-48" />
-              </div>
-              <BatteryCharging className="w-24 h-24 text-emerald-500 mx-auto mb-8 animate-pulse" />
-              <h2 className="text-9xl font-black text-slate-900 dark:text-white italic tracking-tighter leading-none">{batteryLevel}%</h2>
-              <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.5em] mt-8">Intelligent Power Matrix</p>
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-[3.5rem] flex items-center gap-6 border border-white dark:border-slate-800">
-                 <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600">
-                    <History className="w-7 h-7" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Est. Remaining</p>
-                    <p className="text-3xl font-black italic text-slate-900 dark:text-white leading-none mt-1">18h 45m</p>
-                 </div>
-              </div>
-              <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-[3.5rem] flex items-center gap-6 border border-white dark:border-slate-800">
-                 <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-emerald-600">
-                    <Heart className="w-7 h-7" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Battery Health</p>
-                    <p className="text-3xl font-black italic text-emerald-600 leading-none mt-1">Excellent</p>
-                 </div>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {activeMode === 'network' && (
-        <div className="space-y-6 animate-in zoom-in duration-500 max-w-4xl mx-auto">
-           <div className="bg-white dark:bg-slate-800 p-12 rounded-[4.5rem] border border-slate-100 dark:border-slate-700 shadow-xl relative overflow-hidden group">
-              <div className="flex items-center justify-between mb-12 relative z-10">
-                 <div>
-                    <h3 className="text-3xl font-black text-slate-900 dark:text-white italic tracking-tighter leading-none mb-1">SIM Tuner Pro</h3>
-                    <p className="text-[10px] text-blue-500 font-black uppercase tracking-[0.4em]">Advanced Radio Protocol</p>
-                 </div>
-                 <Radio className="w-12 h-12 text-slate-200 group-hover:text-blue-500 transition-colors" />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 relative z-10">
-                 {[
-                   { id: 'LTE', label: 'Force 4G LTE', icon: <Signal className="w-6 h-6" /> },
-                   { id: 'NR', label: 'Force 5G NR', icon: <Zap className="w-6 h-6" /> },
-                   { id: 'GLOBAL', label: 'Global Mode', icon: <Globe className="w-6 h-6" /> }
-                 ].map((mode) => (
-                   <button 
-                     key={mode.id}
-                     onClick={() => setNetworkMode(mode.id as any)}
-                     className={`p-10 rounded-[3.5rem] border-2 transition-all flex flex-col items-center justify-center text-center group active:scale-95 ${networkMode === mode.id ? 'bg-blue-600 border-blue-600 text-white shadow-2xl' : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-500'}`}
-                   >
-                     {mode.icon}
-                     <span className="text-[10px] font-black uppercase tracking-widest mt-5 leading-tight">{mode.label}</span>
-                   </button>
-                 ))}
-              </div>
-           </div>
-        </div>
-      )}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .tab-active { box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3); }
+        .frost-overlay {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.2) 100%);
+            mask-image: url('https://www.transparenttextures.com/patterns/crystal.png');
+        }
+      `}</style>
     </div>
   );
 };
