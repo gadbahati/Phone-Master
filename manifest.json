@@ -1,10 +1,9 @@
-
 {
   "name": "Phone Master Pro",
   "short_name": "Phone Master",
   "description": "Professional high-authority utility toolkit by BahatiTech.",
   "id": "com.bahatitech.phonemaster",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#020617",
@@ -36,21 +35,21 @@
       "name": "Full Virus Scan",
       "short_name": "Scan",
       "description": "Immediately start a global security audit",
-      "url": "./?tab=Security&action=scan",
+      "url": "./index.html?tab=Security&action=scan",
       "icons": [{ "src": "https://cdn-icons-png.flaticon.com/96/3067/3067451.png", "sizes": "96x96" }]
     },
     {
       "name": "CPU Performance Tuner",
       "short_name": "Tune",
       "description": "Optimize and cool your device processor",
-      "url": "./?tab=Security&action=tune",
+      "url": "./index.html?tab=Security&action=tune",
       "icons": [{ "src": "https://cdn-icons-png.flaticon.com/96/3067/3067451.png", "sizes": "96x96" }]
     },
     {
       "name": "Hidden Codes",
       "short_name": "Codes",
       "description": "Access secret Android USSD codes",
-      "url": "./?tab=Codes",
+      "url": "./index.html?tab=Codes",
       "icons": [{ "src": "https://cdn-icons-png.flaticon.com/96/3067/3067451.png", "sizes": "96x96" }]
     }
   ]
